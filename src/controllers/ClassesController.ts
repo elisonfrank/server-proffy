@@ -12,6 +12,8 @@ export default class ClassesController {
   async index(req: Request, res: Response) {
     const filters = req.query;
 
+    console.log(filters);
+
     const week_day = Number(filters.week_day);
     const subject = filters.subject as string;
     const time = filters.time as string;
@@ -28,14 +30,14 @@ export default class ClassesController {
       .whereExists(function () {
         this.select("class_schedule.*")
           .from("class_schedule")
-          .whereRaw("`class_schedule`.`id` = `classes`.`id`")
+          .whereRaw("`class_schedule`.`class_id` = `classes`.`id`")
           .whereRaw("`class_schedule`.`week_day` = ??", [week_day])
           .whereRaw("`class_schedule`.`from` <= ??", [timeInMinutes])
           .whereRaw("`class_schedule`.`to` > ??", [timeInMinutes]);
       })
       .select(["classes.*", "users.*"])
-      .where("classes.subject", "=", subject)
-      .join("users", "classes.user_id", "=", "users.id");
+      .join("users", "classes.user_id", "=", "users.id")
+      .where("classes.subject", "=", subject);
 
     return res.json(classes);
   }
